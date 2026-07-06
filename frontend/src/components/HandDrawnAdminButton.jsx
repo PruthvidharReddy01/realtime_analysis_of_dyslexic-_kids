@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/handdrawnadminbutton.css";
+import "../styles/HandDrawnAdminButton.css";
 
 const HandDrawnAdminButton = () => {
   const handleClick = () => {
