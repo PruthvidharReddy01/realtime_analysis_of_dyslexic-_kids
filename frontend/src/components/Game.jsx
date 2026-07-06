@@ -5,7 +5,7 @@ import JSConfetti from 'js-confetti';
 import { useNavigate } from 'react-router-dom';
 
 // Corrected the CSS import path based on your file structure
-import '../styles/game.css'; 
+import '../styles/Game.css'; 
 
 // --- Import all assets for the Emotion Game ---
 import videoFile from '../assets/video.mp4';
