@@ -39,10 +39,8 @@ services:
         value: 3.11.0
 
   # --- React Frontend (Static Site) ---
-  - type: web
+  - type: static
     name: joyverse-frontend
-    runtime: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     headers:
