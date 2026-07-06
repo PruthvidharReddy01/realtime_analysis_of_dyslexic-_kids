@@ -13,6 +13,8 @@ CORS(app)
 
 # Set device for model inference (GPU if available, else CPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# Limit PyTorch to 1 thread for CPU inference to prevent thrashing and timeouts on Render
+torch.set_num_threads(1)
 
 # Initialize the EmotionTransformer model with specified hyperparameters
 model = EmotionTransformer(
@@ -62,7 +64,7 @@ def predict_emotion():
     data = request.get_json()
     # Extract landmarks from the request data (expected to be a list of 468 * 3 values)
     landmarks = data.get('landmarks', [])
-    print(f"Received landmarks length: {len(landmarks)}")
+    print(f"Received landmarks length: {len(landmarks)}", flush=True)
 
     # Validate the landmarks data
     if not landmarks or len(landmarks) != 468 * 3:
@@ -78,7 +80,7 @@ def predict_emotion():
         features_tensor = torch.FloatTensor(features).unsqueeze(0).to(device)
     except Exception as e:
         # Log error if feature processing fails and return error response
-        print(f"Error processing landmarks: {e}")
+        print(f"Error processing landmarks: {e}", flush=True)
         return jsonify({'error': 'Error processing landmarks'}), 400
 
     try:
@@ -95,12 +97,12 @@ def predict_emotion():
             # Create a dictionary of emotion probabilities
             prob_dict = {label_encoder[i]: float(prob) for i, prob in enumerate(probabilities)}
             # Log the prediction for debugging
-            print(f"Predicted emotion: {emotion}, Probabilities: {prob_dict}")
+            print(f"Predicted emotion: {emotion}, Probabilities: {prob_dict}", flush=True)
             # Return the predicted emotion and probabilities as JSON
             return jsonify({'emotion': emotion, 'probabilities': prob_dict})
     except Exception as e:
         # Log error if prediction fails and return error response
-        print(f"🔥 Error during prediction: {e}")
+        print(f"🔥 Error during prediction: {e}", flush=True)
         return jsonify({'error': 'Prediction failed'}), 500
 
 # Run the Flask server
