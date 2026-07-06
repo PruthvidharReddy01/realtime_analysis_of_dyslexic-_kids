@@ -5,6 +5,10 @@ import '../styles/childstyles.css';
 import '../styles/foilbackground.css';
 import AdminButton from './HandDrawnAdminButton';
 
+import cuteAnimal from '../assets/istockphoto-1140109823-612x612-removebg-preview (1).png';
+import friendlyGiraffe from '../assets/c4f32a3f16d478cc61ba9bd211d204d6-removebg-preview.png';
+import bottomAnimal from '../assets/cute-kawaii-style-halloween-werewolf-character-with-white-board_324746-1272.png';
+
 const ChildLogin = () => {
   const [childName, setChildName] = useState('');
   const [digits, setDigits] = useState(Array(6).fill(''));
@@ -58,21 +62,21 @@ const ChildLogin = () => {
     <div className="foil-stamp-background">
       {/* 🐻 Top Left Image */}
       <img
-        src="istockphoto-1140109823-612x612-removebg-preview (1).png"
+        src={cuteAnimal}
         alt="Cute Animal"
         className="corner-image"
       />
 
       {/* 🦒 Right Side Image */}
       <img
-        src="c4f32a3f16d478cc61ba9bd211d204d6-removebg-preview.png"
+        src={friendlyGiraffe}
         alt="Friendly Giraffe"
         className="corner-image-right"
       />
 
       {/* 🐧 Bottom Left Image or GIF */}
       <img
-        src="cute-kawaii-style-halloween-werewolf-character-with-white-board_324746-1272.png"   // 🟢 replace this with your actual gif or image path
+        src={bottomAnimal}
         alt="Bottom Animal"
         className="corner-image-bottom"
       />
