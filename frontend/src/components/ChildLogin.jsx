@@ -58,6 +58,22 @@ const ChildLogin = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setChildName('Joy');
+    setDigits(['1', '2', '3', '4', '5', '6']);
+    setLoading(true);
+    try {
+      await login('child', { childName: 'Joy', userId: '123456', password: '123456' });
+      navigate('/game');
+    } catch (error) {
+      setErrorMessage(error.message);
+      localStorage.removeItem('child_token');
+      localStorage.removeItem('userId');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="foil-stamp-background">
       {/* 🐻 Top Left Image */}
@@ -122,6 +138,16 @@ const ChildLogin = () => {
                 disabled={loading}
               >
                 {loading ? 'Logging in...' : 'Join the Fun!'}
+              </button>
+
+              <button
+                type="button"
+                className="sign-up demo-btn"
+                style={{ marginTop: '10px', backgroundColor: '#3b82f6', color: 'white' }}
+                onClick={handleDemoLogin}
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : '🎮 Quick Demo Play'}
               </button>
 
               {errorMessage && <div className="error-message">{errorMessage}</div>}

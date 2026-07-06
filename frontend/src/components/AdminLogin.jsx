@@ -33,6 +33,22 @@ const AdminLogin = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setEmail('parent@joyverse.com');
+    setPassword('parent123');
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      await login('admin', { email: 'parent@joyverse.com', password: 'parent123' });
+      navigate('/admin');
+    } catch (error) {
+      console.error("Admin Demo Login failed:", error);
+      setErrorMessage(error.message || 'Login failed. Please check credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="foil-stamp-background">
     <div className="admin-login-container">
@@ -62,6 +78,15 @@ const AdminLogin = () => {
           />
           <button type="submit" disabled={loading} className="sign-up">
             {loading ? 'Logging in...' : 'Login'}
+          </button>
+          <button
+            type="button"
+            className="sign-up"
+            style={{ marginTop: '10px', backgroundColor: '#3b82f6', color: 'white' }}
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : '📊 Quick Demo Dashboard'}
           </button>
         </form>
 
