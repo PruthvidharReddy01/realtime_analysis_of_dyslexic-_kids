@@ -22,6 +22,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+const Child = require('../models/Child');
+
 // Initialize default SuperAdmin account if it doesn't exist
 const initSuperAdmin = async () => {
   try {
@@ -31,8 +33,41 @@ const initSuperAdmin = async () => {
       await SuperAdmin.create({ email: 'superadmin@joyverse.com', password: hashed });
       console.log('✅ Default SuperAdmin created');
     }
+
+    // Seed default parent/admin
+    const existingAdmin = await Admin.findOne({ where: { email: 'parent@joyverse.com' } });
+    let adminId;
+    if (!existingAdmin) {
+      const hashedAdmin = await bcrypt.hash('parent123', 10);
+      const newAdmin = await Admin.create({
+        name: 'Test Parent',
+        phone: '1234567890',
+        email: 'parent@joyverse.com',
+        password: hashedAdmin,
+        active: true
+      });
+      adminId = newAdmin._id;
+      console.log('✅ Default Admin created');
+    } else {
+      adminId = existingAdmin._id;
+    }
+
+    // Seed default child
+    const existingChild = await Child.findOne({ where: { userId: '123456' } });
+    if (!existingChild) {
+      const hashedChild = await bcrypt.hash('123456', 10);
+      await Child.create({
+        childName: 'Joy',
+        phone: '0987654321',
+        userId: '123456',
+        password: hashedChild,
+        parentId: adminId,
+        isActive: true
+      });
+      console.log('✅ Default Child created');
+    }
   } catch (err) {
-    console.error('❌ Error initializing SuperAdmin:', err);
+    console.error('❌ Error initializing SuperAdmin and seed data:', err);
   }
 };
 router.initSuperAdmin = initSuperAdmin;
