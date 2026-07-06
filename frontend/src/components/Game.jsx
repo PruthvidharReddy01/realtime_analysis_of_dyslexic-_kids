@@ -288,12 +288,17 @@ const EmotionGame = ({ onBack }) => {
 
       <video
         ref={videoRef}
-        style={{ display: isGameRunning ? 'none' : 'none' }} 
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          width: '640px',
+          height: '480px',
+          pointerEvents: 'none'
+        }}
         autoPlay
         playsInline
         muted
-        width="640"
-        height="480"
       />
 
       <canvas
