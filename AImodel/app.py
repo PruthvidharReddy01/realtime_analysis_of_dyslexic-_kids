@@ -27,12 +27,12 @@ model = EmotionTransformer(
 # Load the pre-trained model weights
 try:
     # Load model state dictionary from file, mapping to the appropriate device
-    model.load_state_dict(torch.load('backend/emotion_model.pth', map_location=device))
+    model.load_state_dict(torch.load('../backend/emotion_model.pth', map_location=device))
     # Set model to evaluation mode (disables dropout and batch normalization)
     model.eval()
     # Move model to the specified device (CPU/GPU)
     model.to(device)
-    print(f"✅ Model loaded successfully from: backend/emotion_model.pth")
+    print(f"✅ Model loaded successfully from: ../backend/emotion_model.pth")
 except Exception as e:
     # Log error if model loading fails and set model to None to prevent predictions
     print(f"❌ Error loading model: {e}")
@@ -41,10 +41,10 @@ except Exception as e:
 # Load label encoder and normalization parameters
 try:
     # Load label encoder classes (emotion names) from file
-    label_encoder = np.load('backend/label_encoder.npy', allow_pickle=True)
+    label_encoder = np.load('../backend/label_encoder.npy', allow_pickle=True)
     # Load mean and standard deviation for feature normalization
-    mean = np.load('backend/mean.npy', allow_pickle=True)
-    std = np.load('backend/std.npy', allow_pickle=True)
+    mean = np.load('../backend/mean.npy', allow_pickle=True)
+    std = np.load('../backend/std.npy', allow_pickle=True)
     print(f"Label encoder loaded: {list(label_encoder)}")
 except Exception as e:
     # Log error if loading fails and set variables to None

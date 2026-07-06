@@ -31,6 +31,20 @@ const SuperAdminLogin = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setEmail('superadmin@joyverse.com');
+    setPassword('superadmin123');
+    setLoading(true);
+    try {
+      await login('superadmin', { email: 'superadmin@joyverse.com', password: 'superadmin123' });
+      navigate('/superadmin');
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="foil-stamp-background">
     <div className="superadmin-login-container">
@@ -60,6 +74,15 @@ const SuperAdminLogin = () => {
           />
           <button type="submit" disabled={loading} className="sign-up">
             {loading ? 'Logging in...' : 'Login'}
+          </button>
+          <button
+            type="button"
+            className="sign-up"
+            style={{ marginTop: '10px', backgroundColor: '#3b82f6', color: 'white' }}
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : '🔑 Quick Demo SuperAdmin'}
           </button>
         </form>
 
