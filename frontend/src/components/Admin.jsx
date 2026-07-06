@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
 import Chart from "chart.js/auto"; // Re-imported Chart.js
+import { API_BASE_URL, SOCKET_URL } from "../config";
 
 import "../styles/admin.css";
 
@@ -60,7 +61,7 @@ const Admin = () => {
   const gamePerformanceChartInstance = useRef(null);
 
   const navigate = useNavigate();
-  const socket = io("http://localhost:3000", {
+  const socket = io(SOCKET_URL, {
     transports: ["websocket"],
     reconnectionAttempts: 5,
   });
@@ -236,7 +237,7 @@ const Admin = () => {
   // --- Data Fetching Functions ---
   const fetchChildren = async (token) => {
     try {
-      const res = await axios.get("http://localhost:3000/admin/children", {
+      const res = await axios.get(`${API_BASE_URL}/admin/children`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChildren(
@@ -258,7 +259,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.get(
-        `http://localhost:3000/child/emotion-trends/${userId}`,
+        `${API_BASE_URL}/child/emotion-trends/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -274,7 +275,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.get(
-        `http://localhost:3000/child/game-reports/${userId}`,
+        `${API_BASE_URL}/child/game-reports/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -338,7 +339,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.get(
-        `http://localhost:3000/admin/child/${childId}/notes`,
+        `${API_BASE_URL}/admin/child/${childId}/notes`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -359,7 +360,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.post(
-        `http://localhost:3000/admin/child/${managingChild._id}/notes`,
+        `${API_BASE_URL}/admin/child/${managingChild._id}/notes`,
         { text: newNote },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -382,7 +383,7 @@ const Admin = () => {
     }
     try {
       const res = await axios.post(
-        "http://localhost:3000/admin/register-child",
+        `${API_BASE_URL}/admin/register-child`,
         { ...registerChild, password: registerChild.userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -399,7 +400,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.put(
-        `http://localhost:3000/admin/children/${editFormData._id}/edit`,
+        `${API_BASE_URL}/admin/children/${editFormData._id}/edit`,
         {
           childName: editFormData.childName,
           phone: editFormData.phone,
@@ -423,7 +424,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.post(
-        `http://localhost:3000/admin/children/${childId}/reset-password`,
+        `${API_BASE_URL}/admin/children/${childId}/reset-password`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -438,7 +439,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.patch(
-        `http://localhost:3000/admin/children/${childId}/status`,
+        `${API_BASE_URL}/admin/children/${childId}/status`,
         { isActive: !isActive },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -456,7 +457,7 @@ const Admin = () => {
     const token = localStorage.getItem("admin_token");
     try {
       const res = await axios.delete(
-        `http://localhost:3000/admin/children/${childId}/delete`,
+        `${API_BASE_URL}/admin/children/${childId}/delete`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage(res.data.message);

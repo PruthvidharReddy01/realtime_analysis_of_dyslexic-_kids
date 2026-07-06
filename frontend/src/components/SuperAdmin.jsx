@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios'; // For making HTTP requests to the backend
 import { useNavigate } from 'react-router-dom'; // For programmatic navigation
+import { API_BASE_URL } from '../config';
 import '../styles/superadmin.css'; // Styles for the superadmin UI
 
 const SuperAdmin = () => {
@@ -28,7 +29,7 @@ const SuperAdmin = () => {
   // Fetch admins from the backend (memoized to avoid unnecessary re-renders)
   const fetchAdmins = useCallback(async (token) => {
     try {
-      const response = await axios.get('http://localhost:3000/superadmin/admins', {
+      const response = await axios.get(`${API_BASE_URL}/superadmin/admins`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAdmins(response.data); // Update admins list
@@ -69,7 +70,7 @@ const SuperAdmin = () => {
     formData.append('password', adminData.password);
 
     try {
-      const response = await axios.post('http://localhost:3000/superadmin/register-admin', formData, {
+      const response = await axios.post(`${API_BASE_URL}/superadmin/register-admin`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -96,7 +97,7 @@ const SuperAdmin = () => {
     const token = localStorage.getItem('superadmin_token');
     try {
       const response = await axios.put(
-        'http://localhost:3000/superadmin/toggle-admin',
+        `${API_BASE_URL}/superadmin/toggle-admin`,
         { phone: selectedAdmin.phone, active },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -123,7 +124,7 @@ const SuperAdmin = () => {
 
     const token = localStorage.getItem('superadmin_token');
     try {
-      const response = await axios.delete(`http://localhost:3000/superadmin/delete-admin/${phoneToDelete}`, {
+      const response = await axios.delete(`${API_BASE_URL}/superadmin/delete-admin/${phoneToDelete}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessage(response.data.message); // Display success message

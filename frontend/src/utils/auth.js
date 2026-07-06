@@ -1,5 +1,6 @@
 // auth.js
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const setAuthToken = (token, role, id) => {
   if (token && role) {
@@ -32,7 +33,7 @@ const verifyToken = async (role) => {
   if (!token) return false;
 
   try {
-    const endpoint = `http://localhost:3000/${role}/verify-token`;
+    const endpoint = `${API_BASE_URL}/${role}/verify-token`;
     await axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -46,7 +47,7 @@ const verifyToken = async (role) => {
 
 const login = async (role, credentials) => {
   try {
-    const endpoint = `http://localhost:3000/${role}/login`;
+    const endpoint = `${API_BASE_URL}/${role}/login`;
     const response = await axios.post(endpoint, credentials);
     const { token, adminId, userId } = response.data;
 

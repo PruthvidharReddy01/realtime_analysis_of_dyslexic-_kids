@@ -79,6 +79,7 @@
 import { useEffect, useRef } from 'react';
 import * as mpFaceMesh from '@mediapipe/face_mesh';
 import { Camera } from '@mediapipe/camera_utils';
+import { API_BASE_URL } from '../../config';
 
 const useEmotionDetection = (videoRef, canvasRef, emotionDisplayRef, isRunning, onEmotionsCollected) => {
   const emotionQueue = useRef([]);
@@ -108,7 +109,7 @@ const useEmotionDetection = (videoRef, canvasRef, emotionDisplayRef, isRunning, 
 
         try {
           isProcessing.current = true;
-          const response = await fetch('http://localhost:3000/child/detect-emotion', {
+          const response = await fetch(`${API_BASE_URL}/child/detect-emotion`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

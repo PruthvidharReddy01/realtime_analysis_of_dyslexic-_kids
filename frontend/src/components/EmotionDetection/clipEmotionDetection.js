@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const AI_MODEL_URL = import.meta.env.VITE_AI_MODEL_URL || 'http://localhost:5000';
+
 const useClipEmotionDetection = (videoRef, previousActions = "neutral,question1") => {
   const [emotion, setEmotion] = useState(null);
   const [emotionProbs, setEmotionProbs] = useState(null);
@@ -96,7 +98,7 @@ const useClipEmotionDetection = (videoRef, previousActions = "neutral,question1"
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
     
     try {
-      const response = await fetch("http://localhost:5000/analyze-frames", {
+      const response = await fetch(`${AI_MODEL_URL}/analyze-frames`, {
         method: "POST",
         body: formData,
         signal: controller.signal

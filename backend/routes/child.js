@@ -1,11 +1,13 @@
-// child.js: Express router for child-related routes, handling authentication, emotion detection, and game reports
+// child.js: Express router for child-related routes
+// Rewritten from Mongoose to Sequelize (PostgreSQL)
 
-// Import required modules
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Child = require('../models/Child');
+const EmotionHistory = require('../models/EmotionHistory');
+const GameReport = require('../models/GameReport');
 
 // Middleware to verify JWT token for authenticated child routes
 const verifyToken = (req, res, next) => {
@@ -25,7 +27,7 @@ const verifyToken = (req, res, next) => {
 // Route: Verify child token
 router.get('/verify-token', verifyToken, async (req, res) => {
   try {
-    const child = await Child.findOne({ userId: req.user.userId });
+    const child = await Child.findOne({ where: { userId: req.user.userId } });
     if (!child || !child.isActive) {
       return res.status(401).json({ message: 'Invalid or disabled account' });
     }
@@ -44,9 +46,13 @@ router.post('/login', async (req, res) => {
   }
 
   try {
+    // Case-insensitive name match using Sequelize
+    const { Op } = require('sequelize');
     const child = await Child.findOne({
-      childName: { $regex: new RegExp(`^${childName}$`, 'i') },
-      userId,
+      where: {
+        childName: { [Op.iLike]: childName },
+        userId,
+      },
     });
     if (!child || !child.isActive) {
       return res.status(401).json({ message: 'Invalid credentials or account disabled' });
@@ -76,7 +82,8 @@ router.post('/detect-emotion', verifyToken, async (req, res) => {
 
   try {
     const { default: fetch } = await import('node-fetch');
-    const response = await fetch('http://localhost:5000/detect_emotion', {
+    const flaskUrl = process.env.FLASK_API_URL || 'http://localhost:5000';
+    const response = await fetch(`${flaskUrl}/detect_emotion`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ landmarks }),
@@ -103,13 +110,17 @@ router.post('/save-emotion', verifyToken, async (req, res) => {
   }
 
   try {
-    const child = await Child.findOne({ userId });
+    const child = await Child.findOne({ where: { userId } });
     if (!child || !child.isActive) {
       return res.status(404).json({ message: 'Child not found or disabled' });
     }
 
-    child.emotionHistory.push({ emotion, question, timestamp: new Date() });
-    await child.save();
+    await EmotionHistory.create({
+      childId: child._id,
+      emotion,
+      question,
+      timestamp: new Date(),
+    });
 
     req.app.get('io').emit('emotionUpdate', {
       parentId: child.parentId,
@@ -128,9 +139,14 @@ router.post('/save-emotion', verifyToken, async (req, res) => {
 // Route: Get emotion trends for a child
 router.get('/emotion-trends/:userId', verifyToken, async (req, res) => {
   try {
-    const child = await Child.findOne({ userId: req.params.userId });
+    const child = await Child.findOne({ where: { userId: req.params.userId } });
     if (!child) return res.status(404).json({ message: 'Child not found' });
-    res.json(child.emotionHistory);
+
+    const emotionHistory = await EmotionHistory.findAll({
+      where: { childId: child._id },
+      order: [['timestamp', 'ASC']],
+    });
+    res.json(emotionHistory);
   } catch (err) {
     console.error('❌ Error fetching emotion trends:', err);
     res.status(500).json({ message: 'Server error' });
@@ -145,13 +161,19 @@ router.post('/save-game', verifyToken, async (req, res) => {
   }
 
   try {
-    const child = await Child.findOne({ userId });
+    const child = await Child.findOne({ where: { userId } });
     if (!child || !child.isActive) {
       return res.status(404).json({ message: 'Child not found or disabled' });
     }
 
-    child.gameReports.push({ score, emotions, question, isCorrect, completedAt: new Date() });
-    await child.save();
+    await GameReport.create({
+      childId: child._id,
+      score,
+      emotions: emotions || [],
+      question,
+      isCorrect,
+      completedAt: new Date(),
+    });
 
     req.app.get('io').emit('gameReportUpdate', {
       parentId: child.parentId,
@@ -173,12 +195,14 @@ router.post('/save-game', verifyToken, async (req, res) => {
 router.get('/game-reports/:userId', verifyToken, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const child = await Child.findOne({ userId: req.params.userId });
+    const child = await Child.findOne({ where: { userId: req.params.userId } });
     if (!child) return res.status(404).json({ message: 'Child not found' });
 
-    const gameReports = child.gameReports
-      .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
-      .slice(0, limit);
+    const gameReports = await GameReport.findAll({
+      where: { childId: child._id },
+      order: [['completedAt', 'DESC']],
+      limit,
+    });
 
     res.json(gameReports);
   } catch (err) {

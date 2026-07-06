@@ -1,12 +1,13 @@
-// superadmin.js: Express router for superadmin-related routes, handling authentication, admin management, and file uploads
+// superadmin.js: Express router for superadmin-related routes
+// Rewritten from Mongoose to Sequelize (PostgreSQL)
 
-// Import required modules
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const { Op } = require('sequelize');
 const SuperAdmin = require('../models/SuperAdmin');
 const Admin = require('../models/Admin');
 
@@ -23,11 +24,15 @@ const upload = multer({ storage });
 
 // Initialize default SuperAdmin account if it doesn't exist
 const initSuperAdmin = async () => {
-  const existing = await SuperAdmin.findOne({ email: 'superadmin@joyverse.com' });
-  if (!existing) {
-    const hashed = await bcrypt.hash('superadmin123', 10);
-    await SuperAdmin.create({ email: 'superadmin@joyverse.com', password: hashed });
-    console.log('✅ Default SuperAdmin created');
+  try {
+    const existing = await SuperAdmin.findOne({ where: { email: 'superadmin@joyverse.com' } });
+    if (!existing) {
+      const hashed = await bcrypt.hash('superadmin123', 10);
+      await SuperAdmin.create({ email: 'superadmin@joyverse.com', password: hashed });
+      console.log('✅ Default SuperAdmin created');
+    }
+  } catch (err) {
+    console.error('❌ Error initializing SuperAdmin:', err);
   }
 };
 initSuperAdmin();
@@ -39,7 +44,7 @@ const authenticateSuperAdmin = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const superadmin = await SuperAdmin.findOne({ email: decoded.email });
+    const superadmin = await SuperAdmin.findOne({ where: { email: decoded.email } });
     if (!superadmin) return res.status(401).json({ message: 'Unauthorized' });
     req.superadmin = superadmin;
     next();
@@ -64,7 +69,7 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
 
   try {
-    const superadmin = await SuperAdmin.findOne({ email });
+    const superadmin = await SuperAdmin.findOne({ where: { email } });
     if (!superadmin) return res.status(401).json({ message: 'Invalid email' });
 
     const isMatch = await bcrypt.compare(password, superadmin.password);
@@ -88,11 +93,13 @@ router.post('/register-admin', authenticateSuperAdmin, upload.single('profilePho
   }
 
   try {
-    const existing = await Admin.findOne({ $or: [{ phone }, { email }] });
+    const existing = await Admin.findOne({
+      where: { [Op.or]: [{ phone }, { email }] }
+    });
     if (existing) return res.status(400).json({ message: 'Phone or email already in use' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = new Admin({
+    const newAdmin = await Admin.create({
       name,
       phone,
       email,
@@ -100,8 +107,10 @@ router.post('/register-admin', authenticateSuperAdmin, upload.single('profilePho
       password: hashedPassword,
     });
 
-    await newAdmin.save();
-    res.json({ message: '✅ Admin registered successfully', admin: { name, phone, email } });
+    res.json({
+      message: '✅ Admin registered successfully',
+      admin: { name: newAdmin.name, phone: newAdmin.phone, email: newAdmin.email },
+    });
   } catch (err) {
     console.error('❌ Register Admin Error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -111,7 +120,9 @@ router.post('/register-admin', authenticateSuperAdmin, upload.single('profilePho
 // Route: Get all admins
 router.get('/admins', authenticateSuperAdmin, async (req, res) => {
   try {
-    const admins = await Admin.find({}, { password: 0 });
+    const admins = await Admin.findAll({
+      attributes: { exclude: ['password'] },
+    });
     res.json(admins);
   } catch (err) {
     console.error('❌ Error fetching admins:', err);
@@ -127,16 +138,18 @@ router.put('/toggle-admin', authenticateSuperAdmin, async (req, res) => {
   }
 
   try {
-    const admin = await Admin.findOneAndUpdate(
-      { phone },
-      { active },
-      { new: true }
-    ).select('-password');
+    const admin = await Admin.findOne({ where: { phone } });
     if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+    await admin.update({ active });
+
+    // Return admin without password
+    const adminData = admin.toJSON();
+    delete adminData.password;
 
     res.json({
       message: `Admin ${admin.active ? 'enabled' : 'disabled'} successfully`,
-      admin,
+      admin: adminData,
     });
   } catch (err) {
     console.error('❌ Error updating admin status:', err);
@@ -148,8 +161,8 @@ router.put('/toggle-admin', authenticateSuperAdmin, async (req, res) => {
 router.delete('/delete-admin/:phone', authenticateSuperAdmin, async (req, res) => {
   const { phone } = req.params;
   try {
-    const deletedAdmin = await Admin.findOneAndDelete({ phone });
-    if (!deletedAdmin) return res.status(404).json({ message: 'Admin not found' });
+    const deleted = await Admin.destroy({ where: { phone } });
+    if (!deleted) return res.status(404).json({ message: 'Admin not found' });
 
     res.json({ message: 'Admin deleted successfully' });
   } catch (err) {

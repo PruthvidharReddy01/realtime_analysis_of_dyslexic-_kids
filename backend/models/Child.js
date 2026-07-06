@@ -1,26 +1,56 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const childSchema = new mongoose.Schema({
-  childName: { type: String, required: true },
-  phone: { type: String, unique: true, required: true },
-  userId: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  registeredAt: { type: Date, default: Date.now },
-  parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
-  isActive: { type: Boolean, default: true },
-  emotionHistory: [{
-    emotion: String,
-    question: String,
-    timestamp: { type: Date, default: Date.now },
-  }],
-  gameReports: [{
-    score: Number,
-    completedAt: { type: Date, default: Date.now },
-    emotions: [String],
-    question: String,
-    isCorrect: Boolean,
-  }],
+const Child = sequelize.define('Child', {
+  _id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  childName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'child_name',
+  },
+  phone: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+  },
+  userId: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+    field: 'user_id',
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  parentId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    field: 'parent_id',
+    references: {
+      model: 'admins',
+      key: '_id',
+    },
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    field: 'is_active',
+  },
+  registeredAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'registered_at',
+  },
+}, {
+  tableName: 'children',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
-// Export the model, ensuring it’s only compiled once
-module.exports = mongoose.models.Child || mongoose.model('Child', childSchema);
+module.exports = Child;

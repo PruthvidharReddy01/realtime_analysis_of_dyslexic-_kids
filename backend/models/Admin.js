@@ -1,14 +1,49 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const adminSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  phone: { type: String, unique: true, required: true },
-  email: { type: String, unique: true, required: true },
-  profilePhoto: String,
-  password: { type: String, required: true },
-  active: { type: Boolean, default: true },
-  registeredAt: { type: Date, default: Date.now },
+const Admin = sequelize.define('Admin', {
+  _id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+  },
+  profilePhoto: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'profile_photo',
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+  registeredAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'registered_at',
+  },
+}, {
+  tableName: 'admins',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
-// Export the model, ensuring it’s only compiled once
-module.exports = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
+module.exports = Admin;

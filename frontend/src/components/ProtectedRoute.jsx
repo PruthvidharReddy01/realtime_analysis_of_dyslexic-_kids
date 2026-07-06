@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -25,13 +26,13 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
 
       if (allowedRoles.includes('child') && location.pathname.startsWith('/game')) {
         token = localStorage.getItem('child_token');
-        authEndpoint = 'http://localhost:3000/child/verify-token';
+        authEndpoint = `${API_BASE_URL}/child/verify-token`;
       } else if (allowedRoles.includes('admin') && location.pathname.includes('/admin')) {
         token = localStorage.getItem('admin_token');
-        authEndpoint = 'http://localhost:3000/admin/verify-token';
+        authEndpoint = `${API_BASE_URL}/admin/verify-token`;
       } else if (allowedRoles.includes('superadmin') && location.pathname.startsWith('/superadmin')) {
         token = localStorage.getItem('superadmin_token');
-        authEndpoint = 'http://localhost:3000/superadmin/verify-token';
+        authEndpoint = `${API_BASE_URL}/superadmin/verify-token`;
       }
 
       console.log('Token retrieved:', token ? 'Present' : 'Missing', 'for role:', allowedRoles);

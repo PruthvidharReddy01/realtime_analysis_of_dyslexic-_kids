@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Note = sequelize.define('Note', {
+const EmotionHistory = sequelize.define('EmotionHistory', {
   _id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -16,29 +16,21 @@ const Note = sequelize.define('Note', {
       key: '_id',
     },
   },
-  adminId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'admin_id',
-    references: {
-      model: 'admins',
-      key: '_id',
-    },
-  },
-  adminName: {
+  emotion: {
     type: DataTypes.STRING,
     allowNull: false,
-    field: 'admin_name',
   },
-  text: {
-    type: DataTypes.TEXT,
-    allowNull: false,
+  question: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  timestamp: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
   },
 }, {
-  tableName: 'notes',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  tableName: 'emotion_history',
+  timestamps: false,
 });
 
-module.exports = Note;
+module.exports = EmotionHistory;

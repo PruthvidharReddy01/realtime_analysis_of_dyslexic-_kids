@@ -2,11 +2,13 @@ require('dotenv').config();
 
 // Import required modules
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const { Server } = require('socket.io');
 const http = require('http');
 const path = require('path');
+
+// Import Sequelize instance and models (this also sets up associations)
+const { sequelize } = require('./models');
 
 // Import route handlers
 const superadminRoutes = require('./routes/superadmin');
@@ -19,10 +21,13 @@ const app = express();
 // Create an HTTP server instance with Express
 const server = http.createServer(app);
 
+// Dynamic CORS origin from environment variable
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // Initialize Socket.IO server with CORS and transport configurations
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: FRONTEND_URL,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -30,24 +35,15 @@ const io = new Server(server, {
 });
 
 // Middleware setup
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
 app.set('io', io);
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB error:', err));
 
 // Route middleware
 app.use('/superadmin', superadminRoutes);
 app.use('/admin', adminRoutes);
 app.use('/child', childRoutes);
-
 
 // Socket.IO connection handler for real-time updates
 io.on('connection', (socket) => {
@@ -63,6 +59,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// Start the server
+// Connect to PostgreSQL and start the server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+sequelize.sync({ alter: process.env.NODE_ENV !== 'production' })
+  .then(() => {
+    console.log('✅ PostgreSQL connected & tables synced');
+    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  })
+  .catch(err => {
+    console.error('❌ PostgreSQL connection error:', err);
+    process.exit(1);
+  });

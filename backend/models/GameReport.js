@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Note = sequelize.define('Note', {
+const GameReport = sequelize.define('GameReport', {
   _id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -16,29 +16,33 @@ const Note = sequelize.define('Note', {
       key: '_id',
     },
   },
-  adminId: {
+  score: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    field: 'admin_id',
-    references: {
-      model: 'admins',
-      key: '_id',
-    },
+    defaultValue: 0,
   },
-  adminName: {
+  emotions: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+  },
+  question: {
     type: DataTypes.STRING,
-    allowNull: false,
-    field: 'admin_name',
+    allowNull: true,
   },
-  text: {
-    type: DataTypes.TEXT,
+  isCorrect: {
+    type: DataTypes.BOOLEAN,
     allowNull: false,
+    defaultValue: false,
+    field: 'is_correct',
+  },
+  completedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'completed_at',
   },
 }, {
-  tableName: 'notes',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  tableName: 'game_reports',
+  timestamps: false,
 });
 
-module.exports = Note;
+module.exports = GameReport;
