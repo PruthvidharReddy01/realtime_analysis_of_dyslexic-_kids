@@ -83,18 +83,29 @@ router.post('/detect-emotion', verifyToken, async (req, res) => {
   try {
     const { default: fetch } = await import('node-fetch');
     const flaskUrl = process.env.FLASK_API_URL || 'http://localhost:5000';
-    const response = await fetch(`${flaskUrl}/detect_emotion`, {
+    const targetUrl = `${flaskUrl}/detect_emotion`;
+    console.log('📡 Forwarding request to Flask URL:', targetUrl);
+
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ landmarks }),
     });
 
-    const data = await response.json();
-    if (response.ok) {
-      res.json(data);
-    } else {
-      console.error('❌ Flask response error:', data);
-      res.status(response.status).json(data);
+    console.log('📩 Flask response status:', response.status);
+    const rawText = await response.text();
+
+    try {
+      const data = JSON.parse(rawText);
+      if (response.ok) {
+        res.json(data);
+      } else {
+        console.error('❌ Flask response error:', data);
+        res.status(response.status).json(data);
+      }
+    } catch (parseErr) {
+      console.error('❌ Failed to parse Flask response as JSON. Raw response:', rawText);
+      res.status(502).json({ message: 'Bad response from emotion service' });
     }
   } catch (err) {
     console.error('❌ Error forwarding to Flask:', err);
