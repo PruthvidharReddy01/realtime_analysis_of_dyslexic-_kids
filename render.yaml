@@ -57,3 +57,5 @@ services:
         sync: false
       - key: VITE_SOCKET_URL
         sync: false
+      - key: NODE_VERSION
+        value: 20

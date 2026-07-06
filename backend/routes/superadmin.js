@@ -35,7 +35,7 @@ const initSuperAdmin = async () => {
     console.error('❌ Error initializing SuperAdmin:', err);
   }
 };
-initSuperAdmin();
+router.initSuperAdmin = initSuperAdmin;
 
 // Middleware to authenticate SuperAdmin
 const authenticateSuperAdmin = async (req, res, next) => {

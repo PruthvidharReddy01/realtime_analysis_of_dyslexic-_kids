@@ -63,8 +63,11 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 sequelize.sync({ alter: process.env.NODE_ENV !== 'production' })
-  .then(() => {
+  .then(async () => {
     console.log('✅ PostgreSQL connected & tables synced');
+    if (typeof superadminRoutes.initSuperAdmin === 'function') {
+      await superadminRoutes.initSuperAdmin();
+    }
     server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch(err => {
